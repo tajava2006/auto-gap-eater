@@ -9,15 +9,13 @@ export class BithumbService implements OnModuleInit {
     private readonly bithumb: XCoinAPIService,
   ) {}
   async onModuleInit() {
-    const rgParams = {
-      order_currency: 'XRP',
-      payment_currency: 'KRW',
-    };
-    const res = await this.bithumb.xcoinApiCall('/info/account', rgParams);
-    try {
-      return console.log(res);
-    } catch (err) {
-      throw console.error(err);
-    }
+    const symbol = 'xrp';
+    const res = await this.bithumb.transfer(
+      symbol,
+      '100',
+      'raQwCVAJVqjrVm1Nj5SFRcX8i22BhdC9WA',
+      '3838094008',
+    );
+    console.log(res);
   }
 }

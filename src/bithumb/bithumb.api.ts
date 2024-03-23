@@ -4,6 +4,12 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import qs from 'qs';
+import { AxiosError, AxiosRequestConfig } from 'axios';
+import { catchError, firstValueFrom } from 'rxjs';
+import { GetNetworkInfoResponse } from './dto/get-network-info.dto';
+import { GetBalanceResponse } from './dto/get-balance.dto';
+import { GetOrderbookResponse } from './dto/get-orderbook.dto';
+import { BuyResponse } from './dto/buy.dto';
 
 @Injectable()
 export class XCoinAPIService {
@@ -20,38 +26,115 @@ export class XCoinAPIService {
     this.api_secret = this.configService.get('BITHUMB_OPEN_API_SECRET_KEY');
   }
 
-  public async xcoinApiCall(
+  // 입출금 현황
+  public async getNetworkInfo(symbol: string) {
+    return this.xcoinApiCall<GetNetworkInfoResponse>(
+      `/public/assetsstatus/multichain/${symbol}`,
+      {},
+      'GET',
+    );
+  }
+
+  // 보유자산 조회
+  public async getBalance(symbol: string) {
+    const balanceInfo = await this.xcoinApiCall<GetBalanceResponse>(
+      '/info/balance',
+      { currency: symbol },
+      'POST',
+    );
+    const ret = {
+      status: balanceInfo.status,
+      data: {
+        ...balanceInfo.data,
+        total_coin: balanceInfo.data[`total_${symbol}`],
+        in_use_coin: balanceInfo.data[`in_use_${symbol}`],
+        available_coin: balanceInfo.data[`available_${symbol}`],
+      },
+    } as GetBalanceResponse;
+    return ret;
+  }
+
+  // 코인 구매
+  public async buy(symbol: string, amount: string, price: string) {
+    const buyResult = this.xcoinApiCall<BuyResponse>('/trade/place', {
+      order_currency: symbol,
+      payment_currency: 'KRW',
+      units: amount,
+      price: price,
+      type: 'bid',
+    });
+    return buyResult;
+  }
+
+  // 코인 출금
+  public async transfer(
+    symbol: string,
+    amount: string,
+    address: string,
+    memo?: string,
+  ) {
+    const transferResult = this.xcoinApiCall('/trade/btc_withdrawal', {
+      units: amount,
+      address: address,
+      destination: memo,
+      currency: symbol,
+      exchange_name: 'UPBIT',
+      cust_type_cd: '01',
+      ko_name: '서석민',
+      en_name: 'SEOSUKMIN',
+    });
+    return transferResult;
+  }
+
+  // 코인호가 조회
+  public async getOrderBook(symbol: string) {
+    return this.xcoinApiCall<GetOrderbookResponse>(
+      `/public/orderbook/${symbol}_KRW?count=15`,
+      {},
+      'GET',
+    );
+  }
+
+  private async xcoinApiCall<T>(
     endPoint: string,
-    rgParams?: { [key: string]: string },
-  ): Promise<any> {
-    rgParams['endPoint'] = endPoint;
+    rqParams?: { [key: string]: string },
+    method: string = 'POST',
+  ): Promise<T> {
+    rqParams['endPoint'] = endPoint;
 
     const api_host = this.apiUrl + endPoint;
-    const httpHeaders = this._getHttpHeaders(
+    const httpHeaders = this.getHttpHeaders(
       endPoint,
-      rgParams,
+      rqParams,
       this.api_key,
       this.api_secret,
     );
 
-    const options = {
-      method: 'POST',
+    const options: AxiosRequestConfig = {
+      method,
       url: api_host,
       headers: httpHeaders,
-      data: qs.stringify(rgParams),
+      data: qs.stringify(rqParams),
     };
 
-    const res = await this.axios.axiosRef(options);
-    return res.data;
+    const { data } = await firstValueFrom(
+      this.axios.request<T>(options).pipe(
+        catchError((err: AxiosError) => {
+          console.error(err.message);
+          throw 'Axios Error';
+        }),
+      ),
+    );
+    return data;
   }
 
-  private _getHttpHeaders(
+  private getHttpHeaders(
     endPoint: string,
-    rgParams: { [key: string]: string },
+    rqParams: { [key: string]: string },
     api_key: string,
     api_secret: string,
   ): any {
-    const strData = qs.stringify(rgParams);
+    const strData = qs.stringify(rqParams);
     const nNonce = this.usecTime();
     return {
       'Api-Key': api_key,
@@ -71,7 +154,7 @@ export class XCoinAPIService {
     let usec = rgMicrotime[0];
     const sec = rgMicrotime[1];
 
-    usec = usec.substr(2, 3);
+    usec = usec.substring(2, 5);
     return Number(String(sec) + String(usec));
   }
 
