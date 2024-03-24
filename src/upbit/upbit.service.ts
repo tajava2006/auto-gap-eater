@@ -1,16 +1,20 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UpbitApi } from './upbit.api';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
-export class UpbitService implements OnModuleInit {
+export class UpbitService {
   constructor(private readonly upbit: UpbitApi) {}
 
-  async onModuleInit() {
-    const symbol = 'KRW';
-    // const aa = await this.upbit.sell(1000, symbol);
-    // const aa = await this.upbit.getOrdersChange(symbol);
-    // const aa = await this.upbit.getBalanceBySymbol(symbol);
-    const aa = await this.upbit.withdraws('231');
-    console.log(aa);
+  @Cron('* * * * * *')
+  async sellAllCoin() {
+    console.log('업비트 무한 매도 스케쥴러');
+    const symbol = 'XRP';
+    const coinBalance = await this.upbit.getBalanceBySymbol(symbol);
+    if (coinBalance.length === 0) return;
+    console.log('코인 잔고 : ', Number(coinBalance[0].balance));
+    if (Number(coinBalance[0].balance) < 5) return;
+    const sellInfo = await this.upbit.sell(coinBalance[0].balance, symbol);
+    console.log(sellInfo);
   }
 }

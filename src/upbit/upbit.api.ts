@@ -56,12 +56,12 @@ export class UpbitApi {
   }
 
   // 팔기
-  async sell(volume: number, symbol: string) {
+  async sell(volume: string, symbol: string) {
     console.log('sell : ', volume, symbol);
     const ret = await this.upbitApiCall(`/v1/orders`, {
       market: `KRW-${symbol}`,
       side: 'ask',
-      volume: String(volume),
+      volume,
       ord_type: 'market',
     });
     return ret;
