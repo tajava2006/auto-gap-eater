@@ -40,6 +40,7 @@ export class BithumbApi {
       { currency: symbol },
       'POST',
     );
+    if (balanceInfo.status !== '0000') return balanceInfo;
     const ret = {
       status: balanceInfo.status,
       data: {
@@ -115,14 +116,18 @@ export class BithumbApi {
       data: new URLSearchParams(rqParams).toString(),
     };
 
-    const { data } = await firstValueFrom(
-      this.axios.request<T>(options).pipe(
-        catchError((err: AxiosError) => {
-          throw err.response.data;
-        }),
-      ),
-    );
-    return data;
+    try {
+      const { data } = await firstValueFrom(
+        this.axios.request<T>(options).pipe(
+          catchError((err: AxiosError) => {
+            throw err.response.data;
+          }),
+        ),
+      );
+      return data;
+    } catch (err) {
+      return err;
+    }
   }
 
   private getHttpHeaders(

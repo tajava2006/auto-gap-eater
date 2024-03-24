@@ -9,7 +9,7 @@ export class BithumbService implements OnModuleInit {
     private readonly bithumb: BithumbApi,
   ) {}
   async onModuleInit() {
-    const symbol = 'btc';
+    const symbol = 'btdc';
     const res = await this.bithumb.getBalance(symbol);
     // const res = await this.bithumb.buy(symbol, '100000', '100');
     console.log(res);

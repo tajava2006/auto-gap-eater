@@ -67,6 +67,15 @@ export class UpbitApi {
     return ret;
   }
 
+  // 원화 출금
+  async withdraws(amount: string) {
+    const ret = await this.upbitApiCall(`/v1/withdraws/krw`, {
+      amount: String(parseInt(amount)),
+      two_factor_type: 'kakao',
+    });
+    return ret;
+  }
+
   private async upbitApiCall<T>(
     endPoint: string,
     body: { [key: string]: string },
@@ -96,13 +105,17 @@ export class UpbitApi {
       data: body,
     };
 
-    const { data } = await firstValueFrom(
-      this.axios.request<T>(options).pipe(
-        catchError((err: AxiosError) => {
-          throw err.response.data['error'];
-        }),
-      ),
-    );
-    return data;
+    try {
+      const { data } = await firstValueFrom(
+        this.axios.request<T>(options).pipe(
+          catchError((err: AxiosError) => {
+            throw err.response.data;
+          }),
+        ),
+      );
+      return data;
+    } catch (err) {
+      return err;
+    }
   }
 }

@@ -7,6 +7,7 @@ module.exports = {
       env: {
         NODE_ENV: 'ssm',
       },
+      autorestart: false,
     },
     {
       name: 'sso',
