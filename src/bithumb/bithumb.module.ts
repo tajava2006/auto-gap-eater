@@ -7,5 +7,6 @@ import { HttpModule } from '@nestjs/axios';
   imports: [HttpModule],
   controllers: [],
   providers: [BithumbApi, BithumbService],
+  exports: [BithumbApi],
 })
 export class BithumbModule {}
