@@ -118,8 +118,7 @@ export class BithumbApi {
     const { data } = await firstValueFrom(
       this.axios.request<T>(options).pipe(
         catchError((err: AxiosError) => {
-          console.error(err.message);
-          throw 'Axios Error';
+          throw err.response.data;
         }),
       ),
     );
