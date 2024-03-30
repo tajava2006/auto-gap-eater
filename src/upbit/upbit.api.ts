@@ -34,7 +34,7 @@ export class UpbitApi {
   }
 
   // 잔고 조회
-  async getBalanceBySymbol(symbol: symbolType) {
+  async getBalance(symbol: symbolType) {
     const ret = await this.upbitApiCall<GetBalanceResponse>(
       '/v1/accounts',
       {},
@@ -47,7 +47,7 @@ export class UpbitApi {
   }
 
   // 호가 조회
-  async getUpbitOrderbookBySymbol(symbol: symbolType) {
+  async getOrderbook(symbol: symbolType) {
     const ret = await this.upbitApiCall<GetOrderbookResponse>(
       `/v1/orderbook?markets=KRW-${symbol}`,
       {},

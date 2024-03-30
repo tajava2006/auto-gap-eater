@@ -14,7 +14,7 @@ export class UpbitService implements OnModuleInit {
   async sellAllCoin() {
     console.log('업비트 무한 매도 스케쥴러');
     const symbol = 'XRP';
-    const coinBalance = await this.upbit.getBalanceBySymbol(symbol);
+    const coinBalance = await this.upbit.getBalance(symbol);
     if (coinBalance.length === 0) return;
     console.log('업비트 코인 잔고 : ', Number(coinBalance[0].balance));
     if (Number(coinBalance[0].balance) < 5) return;

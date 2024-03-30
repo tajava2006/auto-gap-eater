@@ -45,7 +45,7 @@ export class BalanceManagementService implements OnModuleInit {
     }
   }
 
-  @Cron('* * * * * *')
+  @Cron('*/5 * * * * *')
   async onDeposit() {
     const dbBalancePromise = this.userBalanceRepository.findOne({
       where: {
@@ -84,7 +84,7 @@ export class BalanceManagementService implements OnModuleInit {
     this.krwDepositRepository.insert(newDeposit);
   }
 
-  @Cron('* * * * * *')
+  @Cron('*/5 * * * * *')
   async plusAvailableKrw() {
     const dbBalancePromise = this.userBalanceRepository.findOne({
       where: {
