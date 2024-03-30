@@ -7,6 +7,7 @@ import { sign } from 'jsonwebtoken';
 import { catchError, firstValueFrom } from 'rxjs';
 import { GetBalanceResponse } from './dto/get-account-balance.dto';
 import { GetOrderbookResponse } from './dto/get-orderbook-dto';
+import { symbolType } from 'src/util/symbol';
 
 @Injectable()
 export class UpbitApi {
@@ -24,31 +25,31 @@ export class UpbitApi {
   }
 
   // 주문가능 정보. 새로운 심볼 시험해볼 때만 한번 되는지 선확인 필요
-  async getOrdersChange(symbol: string) {
+  async getOrdersChange(symbol: symbolType) {
     return this.upbitApiCall(
-      `/v1/orders/chance?market=KRW-${symbol.toUpperCase()}`,
+      `/v1/orders/chance?market=KRW-${symbol}`,
       { market: `KRW-${symbol.toUpperCase()}` },
       'GET',
     );
   }
 
   // 잔고 조회
-  async getBalanceBySymbol(symbol: string) {
+  async getBalanceBySymbol(symbol: symbolType) {
     const ret = await this.upbitApiCall<GetBalanceResponse>(
       '/v1/accounts',
       {},
       'GET',
     );
     if (symbol) {
-      return ret.filter((x) => x.currency === symbol.toUpperCase());
+      return ret.filter((x) => x.currency === symbol);
     }
     return ret;
   }
 
   // 호가 조회
-  async getUpbitOrderbookBySymbol(symbol: string) {
+  async getUpbitOrderbookBySymbol(symbol: symbolType) {
     const ret = await this.upbitApiCall<GetOrderbookResponse>(
-      `/v1/orderbook?markets=KRW-${symbol.toUpperCase()}`,
+      `/v1/orderbook?markets=KRW-${symbol}`,
       {},
       'GET',
     );
@@ -56,7 +57,7 @@ export class UpbitApi {
   }
 
   // 팔기
-  async sell(volume: string, symbol: string) {
+  async sell(volume: string, symbol: symbolType) {
     console.log('sell : ', volume, symbol);
     const ret = await this.upbitApiCall(`/v1/orders`, {
       market: `KRW-${symbol}`,

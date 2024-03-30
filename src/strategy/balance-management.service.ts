@@ -1,7 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserBalance } from './entities/user-balance.entity';
-import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { BithumbApi } from 'src/bithumb/bithumb.api';
 import { Cron } from '@nestjs/schedule';
@@ -18,7 +17,6 @@ export class BalanceManagementService implements OnModuleInit {
     private readonly userBalanceRepository: Repository<UserBalance>,
     @InjectRepository(KrwDeposit)
     private readonly krwDepositRepository: Repository<KrwDeposit>,
-    private readonly configService: ConfigService,
     private readonly bithumb: BithumbApi,
   ) {}
 
@@ -36,11 +34,15 @@ export class BalanceManagementService implements OnModuleInit {
     const userBalance = new UserBalance();
     userBalance.id = 1;
     const aa = await this.bithumb.getBalance('XRP');
-    userBalance.totalBalance = aa.data.available_krw;
-    userBalance.availableBalance = aa.data.available_krw;
-    userBalance.frozenBalance = '0';
-    this.userBalanceRepository.upsert(userBalance, ['id']);
-    this.krwDepositRepository.clear();
+    try {
+      userBalance.totalBalance = aa.data.available_krw;
+      userBalance.availableBalance = aa.data.available_krw;
+      userBalance.frozenBalance = '0';
+      this.userBalanceRepository.upsert(userBalance, ['id']);
+      this.krwDepositRepository.clear();
+    } catch (err) {
+      console.log('init 함수 빗썸 에러');
+    }
   }
 
   @Cron('* * * * * *')
@@ -70,7 +72,7 @@ export class BalanceManagementService implements OnModuleInit {
         this.krwDepositRepository.save(dbBalance);
       }
     } catch (err) {
-      console.error('빗썸 에러');
+      console.error('onDeposit 함수 빗썸 에러');
       return;
     }
   }
@@ -95,6 +97,7 @@ export class BalanceManagementService implements OnModuleInit {
       depositsPromise,
     ]);
     let count = 0;
+    if (deposits.length === 0) return;
     for (const row of deposits) {
       const timeRemaining = new Date().getTime() - row.createdAt.getTime();
       if (timeRemaining < 24 * 3601 * 1000) {

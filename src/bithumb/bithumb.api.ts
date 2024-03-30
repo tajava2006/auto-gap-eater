@@ -8,6 +8,7 @@ import { GetBalanceResponse } from './dto/get-balance.dto';
 import { GetOrderbookResponse } from './dto/get-orderbook.dto';
 import { BuyResponse } from './dto/buy.dto';
 import crypto from 'crypto';
+import { symbolType } from 'src/util/symbol';
 
 @Injectable()
 export class BithumbApi {
@@ -25,7 +26,7 @@ export class BithumbApi {
   }
 
   // 입출금 현황
-  public async getNetworkInfo(symbol: string) {
+  public async getNetworkInfo(symbol: symbolType) {
     return this.xcoinApiCall<GetNetworkInfoResponse>(
       `/public/assetsstatus/multichain/${symbol}`,
       {},
@@ -34,7 +35,7 @@ export class BithumbApi {
   }
 
   // 보유자산 조회
-  public async getBalance(symbol: string) {
+  public async getBalance(symbol: symbolType) {
     const balanceInfo = await this.xcoinApiCall<GetBalanceResponse>(
       '/info/balance',
       { currency: symbol },
@@ -45,16 +46,16 @@ export class BithumbApi {
       status: balanceInfo.status,
       data: {
         ...balanceInfo.data,
-        total_coin: balanceInfo.data[`total_${symbol}`],
-        in_use_coin: balanceInfo.data[`in_use_${symbol}`],
-        available_coin: balanceInfo.data[`available_${symbol}`],
+        total_coin: balanceInfo.data[`total_${symbol.toLowerCase()}`],
+        in_use_coin: balanceInfo.data[`in_use_${symbol.toLowerCase()}`],
+        available_coin: balanceInfo.data[`available_${symbol.toLowerCase()}`],
       },
     } as GetBalanceResponse;
     return ret;
   }
 
   // 코인 구매
-  public async buy(symbol: string, amount: string, price: string) {
+  public async buy(symbol: symbolType, amount: string, price: string) {
     const buyResult = this.xcoinApiCall<BuyResponse>('/trade/place', {
       order_currency: symbol,
       payment_currency: 'KRW',
@@ -67,7 +68,7 @@ export class BithumbApi {
 
   // 코인 출금
   public async transfer(
-    symbol: string,
+    symbol: symbolType,
     amount: string,
     address: string,
     memo?: string,
@@ -86,7 +87,7 @@ export class BithumbApi {
   }
 
   // 코인호가 조회
-  public async getOrderBook(symbol: string) {
+  public async getOrderBook(symbol: symbolType) {
     return this.xcoinApiCall<GetOrderbookResponse>(
       `/public/orderbook/${symbol}_KRW?count=15`,
       {},

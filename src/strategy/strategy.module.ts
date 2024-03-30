@@ -4,10 +4,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserBalance } from './entities/user-balance.entity';
 import { BithumbModule } from 'src/bithumb/bithumb.module';
 import { KrwDeposit } from './entities/krw-deposit.entity';
+import { SelectPriceAmountService } from './select-price-amount.service';
+import { UpbitModule } from 'src/upbit/upbit.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserBalance, KrwDeposit]), BithumbModule],
+  imports: [
+    TypeOrmModule.forFeature([UserBalance, KrwDeposit]),
+    BithumbModule,
+    UpbitModule,
+  ],
   controllers: [],
-  providers: [BalanceManagementService],
+  providers: [BalanceManagementService, SelectPriceAmountService],
 })
 export class StrategyModule {}

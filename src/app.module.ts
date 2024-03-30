@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BithumbModule } from './bithumb/bithumb.module';
-import { UpbitModule } from './upbit/upbit.module';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { StrategyModule } from './strategy/strategy.module';
@@ -23,8 +21,6 @@ import { KrwDeposit } from './strategy/entities/krw-deposit.entity';
       synchronize: true, //development only
     }),
     ScheduleModule.forRoot(),
-    BithumbModule,
-    UpbitModule,
     StrategyModule,
   ],
   controllers: [AppController],

@@ -11,7 +11,7 @@ export class BithumbService implements OnModuleInit {
   ) {}
   async onModuleInit() {
     await wait(5000);
-    const symbol = 'btc';
+    const symbol = 'XRP';
     const res = await this.bithumb.getBalance(symbol);
     // res;
     // const res = await this.bithumb.buy(symbol, '100000', '100');

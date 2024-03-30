@@ -7,5 +7,6 @@ import { UpbitApi } from './upbit.api';
   imports: [HttpModule],
   controllers: [],
   providers: [UpbitService, UpbitApi],
+  exports: [UpbitApi],
 })
 export class UpbitModule {}
