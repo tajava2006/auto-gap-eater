@@ -1,5 +1,3 @@
-// user-balance.entity.ts
-
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity({ name: 'user_balance' })

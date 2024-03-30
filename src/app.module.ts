@@ -8,6 +8,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { StrategyModule } from './strategy/strategy.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserBalance } from './strategy/entities/user-balance.entity';
+import { KrwDeposit } from './strategy/entities/krw-deposit.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { UserBalance } from './strategy/entities/user-balance.entity';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'database.sqlite',
-      entities: [UserBalance],
+      entities: [UserBalance, KrwDeposit],
       synchronize: true, //development only
     }),
     ScheduleModule.forRoot(),
