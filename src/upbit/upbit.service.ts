@@ -1,15 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UpbitApi } from './upbit.api';
 import { Cron } from '@nestjs/schedule';
-import wait from 'src/util/wait';
 
 @Injectable()
-export class UpbitService implements OnModuleInit {
+export class UpbitService {
   constructor(private readonly upbit: UpbitApi) {}
 
-  async onModuleInit() {
-    await wait(5000);
-  }
   @Cron('* * * * * *')
   async sellAllCoin() {
     console.log('업비트 무한 매도 스케쥴러');

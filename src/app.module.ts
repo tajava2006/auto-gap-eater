@@ -12,11 +12,11 @@ import { KrwDeposit } from './strategy/entities/krw-deposit.entity';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `${__dirname}/config/.env.${process.env.NODE_ENV}`,
+      envFilePath: `./config/.env.${process.env.NODE_ENV}`,
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'database.sqlite',
+      database: `./database/${process.env.NODE_ENV}.sqlite`,
       entities: [UserBalance, KrwDeposit],
       synchronize: true, //development only
     }),
