@@ -1,7 +1,7 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import wait from 'src/util/wait';
+// import wait from 'src/util/wait';
 import { UserBalance } from './entities/user-balance.entity';
 import { KrwDeposit } from './entities/krw-deposit.entity';
 import { Repository } from 'typeorm';
@@ -10,7 +10,7 @@ import { UpbitApi } from '../upbit/upbit.api';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class SelectPriceAmountService implements OnModuleInit {
+export class SelectPriceAmountService {
   constructor(
     @InjectRepository(UserBalance)
     private readonly userBalanceRepository: Repository<UserBalance>,
@@ -20,9 +20,6 @@ export class SelectPriceAmountService implements OnModuleInit {
     private readonly bithumb: BithumbApi,
     private readonly upbitApi: UpbitApi,
   ) {}
-  async onModuleInit() {
-    await wait(5000);
-  }
   @Cron('* * * * * *')
   async selectAmountAndPrice() {
     // const symbol = 'XRP';
@@ -47,7 +44,7 @@ export class SelectPriceAmountService implements OnModuleInit {
     //   Number(availableKrw.availableBalance) <
     //   Number(this.configService.get('KRW_MIN_AMOUNT'))
     // ) {
-    //   console.log('출금가능한 원화가 작음', availableKrw.availableBalance);
+    //   console.log('출금가능 원화가 설정가 미만', availableKrw.availableBalance);
     // }
     // let buyPrice = 0;
     // let totalQuantity = 0;

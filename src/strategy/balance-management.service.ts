@@ -39,49 +39,86 @@ export class BalanceManagementService implements OnModuleInit {
       userBalance.totalBalance = bithumbBalance.data.available_krw;
       userBalance.availableBalance = bithumbBalance.data.available_krw;
       userBalance.frozenBalance = '0';
+      userBalance.updatedAt = String(new Date().getTime()) + '000';
       this.userBalanceRepository.upsert(userBalance, ['id']);
     } catch (err) {
-      console.log('createUserBalance 빗썸 에러');
+      console.log('upsertUserBalance 에러');
     }
   }
 
   @Cron('*/5 * * * * *')
-  async onDeposit() {
+  async onBalanceChange() {
     const dbBalancePromise = this.userBalanceRepository.findOne({
       where: {
         id: 1,
       },
     });
-    const realBalancePromise = this.bithumb.getBalance('XRP');
-
+    const myOrderPromise = this.bithumb.getMySuccessOrder();
+    const [dbBalance, myOrder] = await Promise.all([
+      dbBalancePromise,
+      myOrderPromise,
+    ]);
     try {
-      const [dbBalance, realBalance] = await Promise.all([
-        dbBalancePromise,
-        realBalancePromise,
-      ]);
-
-      const income =
-        Number(realBalance.data.available_krw) - Number(dbBalance.totalBalance);
-      if (income > 1) {
-        console.log('빗썸에 원화 입금 발생. 입금량 : ', income);
-        await this.saveNewDeposit(income);
-        dbBalance.frozenBalance = String(
-          income + Number(dbBalance.frozenBalance),
-        );
-        dbBalance.totalBalance = realBalance.data.available_krw;
-        const updatedBalance = await this.userBalanceRepository.save(dbBalance);
-        console.log('유저 밸런스 업데이트 : ', updatedBalance);
+      for (let i = myOrder.data.length - 1; i >= 0; i--) {
+        const order = myOrder.data[i];
+        if (Number(order.transfer_date) <= Number(dbBalance.updatedAt) + 1000)
+          continue;
+        switch (order.search) {
+          case '1':
+            const krwAmount = Number(order.amount) + Number(order.fee);
+            dbBalance.availableBalance = String(
+              Number(dbBalance.availableBalance) - krwAmount,
+            );
+            dbBalance.totalBalance = String(
+              Number(dbBalance.totalBalance) - krwAmount,
+            );
+            console.log('코인 매수 원 : ', krwAmount, 'XRP : ', order.units);
+            await this.userBalanceRepository.save(dbBalance);
+            break;
+          case '2':
+            console.log('로직에 실수가 없다면 발생하지 않아야 함');
+            break;
+          case '4':
+            if (order.order_currency !== 'KRW') break;
+            if (order.payment_currency !== 'KRW') break;
+            dbBalance.frozenBalance = String(
+              Number(dbBalance.frozenBalance) + Number(order.price),
+            );
+            dbBalance.totalBalance = String(
+              Number(dbBalance.totalBalance) + Number(order.price),
+            );
+            dbBalance.updatedAt = order.transfer_date;
+            console.log('빗썸에 원화 입금 발생 입금량 : ', order.price);
+            await this.userBalanceRepository.save(dbBalance);
+            await this.saveNewDeposit(order.price, order.transfer_date);
+            break;
+          case '5':
+            if (order.order_currency !== 'KRW') break;
+            if (order.payment_currency !== 'KRW') break;
+            dbBalance.frozenBalance = String(
+              Number(dbBalance.frozenBalance) -
+                Number(order.price.substring(1)),
+            );
+            dbBalance.totalBalance = String(
+              Number(dbBalance.totalBalance) - Number(order.price.substring(1)),
+            );
+            dbBalance.updatedAt = order.transfer_date;
+            console.log('빗썸에 원화 출금 발생 출금량 : ', order.price);
+            await this.userBalanceRepository.save(dbBalance);
+            break;
+          default:
+            console.log('onBalance 함수 모르는 케이스');
+        }
       }
     } catch (err) {
-      console.error('onDeposit 함수 빗썸 에러');
-      return;
+      console.log('onBalanceChange 에러');
     }
   }
 
-  async saveNewDeposit(income: number) {
+  async saveNewDeposit(price: string, date: string) {
     const newDeposit = new KrwDeposit();
-    newDeposit.amount = income;
-    newDeposit.createdAt = new Date();
+    newDeposit.amount = price;
+    newDeposit.createdAt = date;
     await this.krwDepositRepository.insert(newDeposit);
   }
 
@@ -100,25 +137,30 @@ export class BalanceManagementService implements OnModuleInit {
     let count = 0;
     if (deposits.length === 0) return;
     for (const row of deposits) {
-      const timeRemaining = new Date().getTime() - row.createdAt.getTime();
-      if (timeRemaining < 24 * 3601 * 1000) {
+      const timeRemaining = new Date().getTime() * 1000 - Number(row.createdAt);
+      if (timeRemaining < 24 * 3601 * 1000000) {
         console.log(
           '원화 입금 제한 유지',
           row.amount,
           ' 원 ',
-          (60 * 24 - timeRemaining / (1000 * 60)).toFixed(3),
+          (60 * 24 - timeRemaining / (1000000 * 60)).toFixed(3),
           ' 분 남음',
         );
         continue;
       }
-      console.log('24시간 해제! : ', row.amount);
+      const amountShoudbeRebalanced = Math.min(
+        Number(row.amount),
+        Number(dbBalance.frozenBalance),
+      );
+      console.log('24시간 해제! : ', row.amount, amountShoudbeRebalanced);
       dbBalance.frozenBalance = String(
-        Number(dbBalance.frozenBalance) - row.amount,
+        Number(dbBalance.frozenBalance) - amountShoudbeRebalanced,
       );
       dbBalance.availableBalance = String(
-        Number(dbBalance.availableBalance) + row.amount,
+        Number(dbBalance.availableBalance) + amountShoudbeRebalanced,
       );
-      this.krwDepositRepository.delete(row);
+      const deletedrow = await this.krwDepositRepository.delete(row);
+      console.log('원화입금 row 삭제 : ', deletedrow);
       count += 1;
     }
     if (count === deposits.length) {

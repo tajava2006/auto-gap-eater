@@ -6,8 +6,8 @@ export class KrwDeposit {
   id: number;
 
   @Column({ name: 'amount', nullable: false })
-  amount: number;
+  amount: string;
 
   @Column({ name: 'created_at', nullable: false })
-  createdAt: Date;
+  createdAt: string;
 }

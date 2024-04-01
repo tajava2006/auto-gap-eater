@@ -13,4 +13,7 @@ export class UserBalance {
 
   @Column({ name: 'available_balance', length: 256, nullable: false })
   availableBalance: string;
+
+  @Column({ name: 'updated_at', length: 256, nullable: false })
+  updatedAt: string;
 }

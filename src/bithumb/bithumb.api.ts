@@ -9,6 +9,7 @@ import { GetOrderbookResponse } from './dto/get-orderbook.dto';
 import { BuyResponse } from './dto/buy.dto';
 import crypto from 'crypto';
 import { symbolType } from 'src/util/symbol';
+import { GetMyOrderResponse } from './dto/get-my-order.dto';
 
 @Injectable()
 export class BithumbApi {
@@ -93,6 +94,15 @@ export class BithumbApi {
       {},
       'GET',
     );
+  }
+
+  // 거래 체결내역 조회
+  public async getMySuccessOrder() {
+    return this.xcoinApiCall<GetMyOrderResponse>(`/info/user_transactions`, {
+      count: '50',
+      order_currency: 'XRP',
+      payment_currency: 'KRW',
+    });
   }
 
   private async xcoinApiCall<T>(
