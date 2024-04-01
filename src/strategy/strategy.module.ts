@@ -6,6 +6,7 @@ import { BithumbModule } from 'src/bithumb/bithumb.module';
 import { KrwDeposit } from './entities/krw-deposit.entity';
 import { SelectPriceAmountService } from './select-price-amount.service';
 import { UpbitModule } from 'src/upbit/upbit.module';
+import { BuyAndTransferService } from './buy-and-transfer.service';
 
 @Module({
   imports: [
@@ -14,6 +15,10 @@ import { UpbitModule } from 'src/upbit/upbit.module';
     UpbitModule,
   ],
   controllers: [],
-  providers: [BalanceManagementService, SelectPriceAmountService],
+  providers: [
+    BalanceManagementService,
+    SelectPriceAmountService,
+    BuyAndTransferService,
+  ],
 })
 export class StrategyModule {}
