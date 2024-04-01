@@ -97,10 +97,10 @@ export class BithumbApi {
   }
 
   // 거래 체결내역 조회
-  public async getMySuccessOrder() {
+  public async getMySuccessOrder(symbol: symbolType) {
     return this.xcoinApiCall<GetMyOrderResponse>(`/info/user_transactions`, {
       count: '50',
-      order_currency: 'XRP',
+      order_currency: symbol,
       payment_currency: 'KRW',
     });
   }

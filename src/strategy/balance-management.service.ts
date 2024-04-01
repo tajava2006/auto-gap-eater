@@ -53,7 +53,7 @@ export class BalanceManagementService implements OnModuleInit {
         id: 1,
       },
     });
-    const myOrderPromise = this.bithumb.getMySuccessOrder();
+    const myOrderPromise = this.bithumb.getMySuccessOrder('XRP');
     const [dbBalance, myOrder] = await Promise.all([
       dbBalancePromise,
       myOrderPromise,
