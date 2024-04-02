@@ -39,7 +39,6 @@ export class AppController {
 
   @Post('/github-webhooks')
   async githubWebhooks(@Body() body, @Res() res, @Req() req) {
-    console.log('body :', body);
     // Git에서 코드 풀하기
     if (!this.verify_signature(req)) {
       res.status(401).send('Unauthorized');
