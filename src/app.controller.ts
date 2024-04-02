@@ -30,10 +30,7 @@ export class AppController {
       .update(JSON.stringify(req.body))
       .digest('hex');
     const trusted = Buffer.from(`sha256=${signature}`, 'ascii');
-    const untrusted = Buffer.from(
-      req.headers.get('x-hub-signature-256'),
-      'ascii',
-    );
+    const untrusted = Buffer.from(req.headers['x-hub-signature-256'], 'ascii');
     return crypto.timingSafeEqual(trusted, untrusted);
   };
 
