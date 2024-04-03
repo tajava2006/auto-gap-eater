@@ -16,7 +16,7 @@ lerna-debug.log*
 # OS
 .DS_Store
 
-auto-gap-eater.ppk
+auto-gap-eater.*
 
 # Tests
 /coverage
