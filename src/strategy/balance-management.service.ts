@@ -159,6 +159,8 @@ export class BalanceManagementService implements OnModuleInit {
       dbBalance.availableBalance = String(
         Number(dbBalance.availableBalance) + amountShoudbeRebalanced,
       );
+      dbBalance.updatedAt = String(new Date().getTime()) + '000';
+      await this.userBalanceRepository.save(dbBalance);
       const deletedrow = await this.krwDepositRepository.delete(row);
       console.log('원화입금 row 삭제 : ', deletedrow);
       count += 1;
