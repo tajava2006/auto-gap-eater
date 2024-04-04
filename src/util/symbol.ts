@@ -9,7 +9,7 @@ type symbolType = 'XRP' | 'SEI' | 'SOL';
 const symbolMap = new Map<symbolType, SymbolInfo>();
 
 symbolMap.set('XRP', {
-  fee: 1,
+  fee: 0.6,
   address: 'raQwCVAJVqjrVm1Nj5SFRcX8i22BhdC9WA',
   memo: '3838094008',
 });
