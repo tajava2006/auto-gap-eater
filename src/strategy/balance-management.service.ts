@@ -61,7 +61,7 @@ export class BalanceManagementService implements OnModuleInit {
     try {
       for (let i = myOrder.data.length - 1; i >= 0; i--) {
         const order = myOrder.data[i];
-        if (Number(order.transfer_date) <= Number(dbBalance.updatedAt) + 1000)
+        if (Number(order.transfer_date) <= Number(dbBalance.updatedAt) + 1)
           continue;
         switch (order.search) {
           case '1':

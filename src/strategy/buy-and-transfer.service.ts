@@ -61,7 +61,7 @@ export class BuyAndTransferService {
         );
         console.log('전송 영수증 :', transfer);
       } else {
-        console.log('코인 전송 대기 중 코인 수량 : ', transferAmount);
+        console.log('코인 전송 대기 중 : ', amount.data.available_coin);
       }
     } catch (err) {
       console.log('transfer 함수 에러');
