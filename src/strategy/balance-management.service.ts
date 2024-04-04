@@ -65,7 +65,8 @@ export class BalanceManagementService implements OnModuleInit {
           continue;
         switch (order.search) {
           case '1':
-            const krwAmount = Number(order.amount) + Number(order.fee);
+            const krwAmount =
+              Number(order.amount) + Number(order.fee.replace(/,/g, ''));
             console.log('밸런스 1 오더: ', order, ', krwamount: ', krwAmount);
             dbBalance.availableBalance = String(
               Number(dbBalance.availableBalance) - krwAmount,
@@ -74,6 +75,7 @@ export class BalanceManagementService implements OnModuleInit {
               Number(dbBalance.totalBalance) - krwAmount,
             );
             console.log('밸런스 1 유저 밸런스: ', dbBalance);
+            dbBalance.updatedAt = order.transfer_date;
             await this.userBalanceRepository.save(dbBalance);
             break;
           case '2':
