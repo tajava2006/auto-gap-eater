@@ -65,6 +65,7 @@ export class SelectPriceAmountService {
       this.configService.get('KRW_AMOUNT_PER_ONE_CYCLE'),
       Number(availableKrw.availableBalance),
     );
+    console.log('전략함수 targetAmount : ', targetAmount);
     for (const item of bithumbOrderbook.data.asks) {
       const price = Number(item.price);
       const quantity = Number(item.quantity);
