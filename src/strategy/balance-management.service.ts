@@ -66,22 +66,21 @@ export class BalanceManagementService implements OnModuleInit {
         switch (order.search) {
           case '1':
             const krwAmount = Number(order.amount) + Number(order.fee);
-            console.log('밸런스 1: ', order, ', krwamount: ', krwAmount);
+            console.log('밸런스 1 오더: ', order, ', krwamount: ', krwAmount);
             dbBalance.availableBalance = String(
               Number(dbBalance.availableBalance) - krwAmount,
             );
             dbBalance.totalBalance = String(
               Number(dbBalance.totalBalance) - krwAmount,
             );
-            console.log('밸런스 1: ', dbBalance);
-            console.log('코인 매수 원 : ', krwAmount, 'XRP : ', order.units);
+            console.log('밸런스 1 유저 밸런스: ', dbBalance);
             await this.userBalanceRepository.save(dbBalance);
             break;
           case '2':
             console.log('로직에 실수가 없다면 발생하지 않아야 함');
             break;
           case '4':
-            console.log('밸런스 4:', order);
+            console.log('밸런스 4 원화 입금 오더 :', order);
             if (order.order_currency !== 'KRW') break;
             if (order.payment_currency !== 'KRW') break;
             dbBalance.frozenBalance = String(
@@ -90,15 +89,15 @@ export class BalanceManagementService implements OnModuleInit {
             dbBalance.totalBalance = String(
               Number(dbBalance.totalBalance) + Number(order.price),
             );
-            console.log('밸런스 4: ', dbBalance);
+            console.log('밸런스 4 유저밸런스: ', dbBalance);
             dbBalance.updatedAt = order.transfer_date;
-            console.log('빗썸에 원화 입금 발생 입금량 : ', order.price);
             await this.userBalanceRepository.save(dbBalance);
             await this.saveNewDeposit(order.price, order.transfer_date);
             break;
           case '5':
             if (order.order_currency !== 'KRW') break;
             if (order.payment_currency !== 'KRW') break;
+            console.log('밸런스 5 원화 출금 : ', order);
             dbBalance.frozenBalance = String(
               Number(dbBalance.frozenBalance) -
                 Number(order.price.substring(1)),
@@ -107,7 +106,7 @@ export class BalanceManagementService implements OnModuleInit {
               Number(dbBalance.totalBalance) - Number(order.price.substring(1)),
             );
             dbBalance.updatedAt = order.transfer_date;
-            console.log('빗썸에 원화 출금 발생 출금량 : ', order.price);
+            console.log('밸런스 5 유저 밸런스 : ', dbBalance);
             await this.userBalanceRepository.save(dbBalance);
             break;
           default:
@@ -156,7 +155,7 @@ export class BalanceManagementService implements OnModuleInit {
         Number(row.amount),
         Number(dbBalance.frozenBalance),
       );
-      console.log('리밸런스 함수 : ', amountShoudbeRebalanced);
+      console.log('리밸런스 함수 플마 금액 : ', amountShoudbeRebalanced);
       console.log('24시간 해제! : ', row.amount, amountShoudbeRebalanced);
       dbBalance.frozenBalance = String(
         Number(dbBalance.frozenBalance) - amountShoudbeRebalanced,
@@ -165,7 +164,7 @@ export class BalanceManagementService implements OnModuleInit {
         Number(dbBalance.availableBalance) + amountShoudbeRebalanced,
       );
       dbBalance.updatedAt = String(new Date().getTime()) + '000';
-      console.log('리밸런스 함수 :', dbBalance);
+      console.log('리밸런스 함수 유저 밸런스 :', dbBalance);
       await this.userBalanceRepository.save(dbBalance);
       const deletedrow = await this.krwDepositRepository.delete(row);
       console.log('원화입금 row 삭제 : ', deletedrow);
