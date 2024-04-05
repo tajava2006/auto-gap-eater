@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-// import wait from 'src/util/wait';
+import wait from 'src/util/wait';
 import { UserBalance } from './entities/user-balance.entity';
-import { KrwDeposit } from './entities/krw-deposit.entity';
 import { Repository } from 'typeorm';
 import { BithumbApi } from 'src/bithumb/bithumb.api';
 import { UpbitApi } from '../upbit/upbit.api';
@@ -17,8 +16,6 @@ export class SelectPriceAmountService {
   constructor(
     @InjectRepository(UserBalance)
     private readonly userBalanceRepository: Repository<UserBalance>,
-    @InjectRepository(KrwDeposit)
-    private readonly krwDepositRepository: Repository<KrwDeposit>,
     private readonly configService: ConfigService,
     private readonly bithumb: BithumbApi,
     private readonly upbitApi: UpbitApi,
@@ -124,6 +121,7 @@ export class SelectPriceAmountService {
       this.buyPrice = buyPrice;
       this.totalQuantity = totalQuantity;
       this.run = true;
+      await wait(1000 * 60 * 5);
     } else {
       console.log('nonono');
       this.run = false;
