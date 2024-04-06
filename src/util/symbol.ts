@@ -21,7 +21,7 @@ symbolMap.set('SEI', {
 });
 
 symbolMap.set('SOL', {
-  fee: 0.03,
+  fee: 0.009,
   address: '4tmGLRCpJDQDtRVy4RTvnoVJmPPEWKCaJ3auCQrXu3K9',
 });
 

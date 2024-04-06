@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { BithumbApi } from 'src/bithumb/bithumb.api';
 import { Cron } from '@nestjs/schedule';
 import { KrwDeposit } from './entities/krw-deposit.entity';
+import { ConfigService } from '@nestjs/config';
+import { symbolType } from 'src/util/symbol';
 
 // 원화 입금후 24시간 출금 제한을 관리하기 위한 서비스
 // 입금을 감지하면 frozon balance를 더하고 deposit에 시간과 amount를 기록한다.
@@ -17,6 +19,7 @@ export class BalanceManagementService implements OnModuleInit {
     private readonly userBalanceRepository: Repository<UserBalance>,
     @InjectRepository(KrwDeposit)
     private readonly krwDepositRepository: Repository<KrwDeposit>,
+    private readonly configService: ConfigService,
     private readonly bithumb: BithumbApi,
   ) {}
 
@@ -34,7 +37,8 @@ export class BalanceManagementService implements OnModuleInit {
   async upsertUserBalance() {
     const userBalance = new UserBalance();
     userBalance.id = 1;
-    const bithumbBalance = await this.bithumb.getBalance('XRP');
+    const symbol: symbolType = this.configService.get('SYMBOL_TO_RUN');
+    const bithumbBalance = await this.bithumb.getBalance(symbol);
     try {
       userBalance.totalBalance = bithumbBalance.data.available_krw;
       userBalance.availableBalance = bithumbBalance.data.available_krw;
@@ -53,7 +57,8 @@ export class BalanceManagementService implements OnModuleInit {
         id: 1,
       },
     });
-    const myOrderPromise = this.bithumb.getMySuccessOrder('XRP');
+    const symbol: symbolType = this.configService.get('SYMBOL_TO_RUN');
+    const myOrderPromise = this.bithumb.getMySuccessOrder(symbol);
     const [dbBalance, myOrder] = await Promise.all([
       dbBalancePromise,
       myOrderPromise,

@@ -3,7 +3,8 @@ import { BithumbApi } from 'src/bithumb/bithumb.api';
 import { Cron } from '@nestjs/schedule';
 import { SelectPriceAmountService } from './select-price-amount.service';
 import wait from 'src/util/wait';
-import { symbolMap } from 'src/util/symbol';
+import { symbolMap, symbolType } from 'src/util/symbol';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BuyAndTransferService {
@@ -11,6 +12,7 @@ export class BuyAndTransferService {
   constructor(
     private readonly bithumb: BithumbApi,
     private readonly selectPriceAmountService: SelectPriceAmountService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Cron('* * * * * *')
@@ -19,7 +21,7 @@ export class BuyAndTransferService {
       console.log('너무 자주 매수 하지 마');
       return;
     }
-    const symbol = 'XRP';
+    const symbol: symbolType = this.configService.get('SYMBOL_TO_RUN');
     const strategy = this.selectPriceAmountService.canRun();
     console.log('buy service :', strategy);
     if (!strategy.run) return;
@@ -42,7 +44,7 @@ export class BuyAndTransferService {
 
   @Cron('* * * * * *')
   private async transfer() {
-    const symbol = 'XRP';
+    const symbol: symbolType = this.configService.get('SYMBOL_TO_RUN');
     const amount = await this.bithumb.getBalance(symbol);
     try {
       const transferAmount = String(

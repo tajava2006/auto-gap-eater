@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { BithumbApi } from 'src/bithumb/bithumb.api';
 import { UpbitApi } from '../upbit/upbit.api';
 import { ConfigService } from '@nestjs/config';
+import { symbolType } from 'src/util/symbol';
 
 @Injectable()
 export class SelectPriceAmountService {
@@ -31,7 +32,7 @@ export class SelectPriceAmountService {
 
   @Cron('*/5 * * * * *')
   private async selectAmountAndPrice() {
-    const symbol = 'XRP';
+    const symbol: symbolType = this.configService.get('SYMBOL_TO_RUN');
     const networkInfo = await this.bithumb.getNetworkInfo(symbol);
     const bithumbStatus =
       networkInfo.data[0].deposit_status +
@@ -120,11 +121,23 @@ export class SelectPriceAmountService {
       console.log('gogogo');
       this.buyPrice = buyPrice;
       this.totalQuantity = totalQuantity;
-      this.run = true;
+      if (this.configService.get('RUN') === '1') {
+        console.log('실제 상황 사자');
+        this.run = true;
+      } else {
+        console.log('테스트 중 이라서 사지 않음');
+        this.run = false;
+      }
       await wait(1000 * 60 * 5);
     } else {
       console.log('nonono');
-      this.run = false;
+      if (this.configService.get('RUN') === '1') {
+        console.log('실제 상황이지만 가성비 안 나옴');
+        this.run = false;
+      } else {
+        console.log('테스트 중이고 가성비도 안 나옴');
+        this.run = false;
+      }
     }
   }
 }
