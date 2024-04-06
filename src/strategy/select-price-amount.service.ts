@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { BithumbApi } from 'src/bithumb/bithumb.api';
 import { UpbitApi } from '../upbit/upbit.api';
 import { ConfigService } from '@nestjs/config';
-import { symbolType } from 'src/util/symbol';
+import { symbolMap, symbolType } from 'src/util/symbol';
 
 @Injectable()
 export class SelectPriceAmountService {
@@ -106,8 +106,8 @@ export class SelectPriceAmountService {
     }
     // 너무 최적가격으로 주문을 내면 다 안 사질 염려가 있으므로 1틱 비싸게 주문함. 그에 따라 수량은 적당히 적게 조절함
     // todo 심볼별로 몇 원 비싸게 살 것인지 수량을 얼마나 줄여야 할 것인지 다르게 해줘야 할 수 있음
-    totalQuantity = totalQuantity - 100;
-    buyPrice = buyPrice + 1;
+    totalQuantity = totalQuantity - symbolMap.get(symbol).oneTickBonus;
+    buyPrice = buyPrice + symbolMap.get(symbol).oneTick;
     console.log('지정가격: ', buyPrice);
     console.log('구매수량: ', totalQuantity);
     console.log('최종소비원화: ', consumedKrw);
