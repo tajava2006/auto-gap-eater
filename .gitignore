@@ -17,7 +17,6 @@ lerna-debug.log*
 .DS_Store
 
 auto-gap-eater.*
-*.sqlite
 
 # Tests
 /coverage
