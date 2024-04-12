@@ -105,6 +105,25 @@ export class BalanceManagementService implements OnModuleInit {
             if (order.order_currency !== 'KRW') break;
             if (order.payment_currency !== 'KRW') break;
             console.log('밸런스 5 원화 출금 : ', order);
+            const depositKrw = await this.krwDepositRepository.find();
+            let withdrawKrw = Number(order.price.substring(1));
+            for (let i = depositKrw.length - 1; i >= 0; i--) {
+              if (Number(depositKrw[i].amount) < withdrawKrw) {
+                withdrawKrw -= Number(depositKrw[i].amount);
+                const result = await this.krwDepositRepository.delete(
+                  depositKrw[i],
+                );
+                console.log('원화 출금으로 인해 이전 입금 삭제 : ', result);
+              } else {
+                depositKrw[i].amount = String(
+                  Number(depositKrw[i].amount) - withdrawKrw,
+                );
+                const result = await this.krwDepositRepository.save(
+                  depositKrw[i],
+                );
+                console.log('원화 출금으로 인한 이전 입금 삭감 : ', result);
+              }
+            }
             dbBalance.frozenBalance = String(
               Number(dbBalance.frozenBalance) -
                 Number(order.price.substring(1)),
