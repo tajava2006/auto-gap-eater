@@ -10,6 +10,7 @@ import { BuyResponse } from './dto/buy.dto';
 import crypto from 'crypto';
 import { symbolType } from 'src/util/symbol';
 import { GetMyOrderResponse } from './dto/get-my-order.dto';
+import { GetPendingOrderResponse } from './dto/get-pending-order.dto';
 
 @Injectable()
 export class BithumbApi {
@@ -102,6 +103,24 @@ export class BithumbApi {
       count: '10',
       order_currency: symbol,
       payment_currency: 'KRW',
+    });
+  }
+
+  // 거래 미체결내역 조회
+  public async getMyPendingOrder(symbol: symbolType) {
+    return this.xcoinApiCall<GetPendingOrderResponse>(`/info/orders`, {
+      count: '10',
+      order_currency: symbol,
+      payment_currency: 'KRW',
+    });
+  }
+
+  // 주문취소
+  public async cancelOrder(symbol: symbolType, order_id: string) {
+    return this.xcoinApiCall(`/trade/cancel`, {
+      order_currency: symbol,
+      payment_currency: 'KRW',
+      order_id,
     });
   }
 

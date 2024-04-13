@@ -6,7 +6,7 @@ interface SymbolInfo {
   oneTickBonus: number;
 }
 
-type symbolType = 'XRP' | 'SEI' | 'SOL';
+type symbolType = 'XRP' | 'SEI' | 'SOL' | 'EOS';
 
 const symbolMap = new Map<symbolType, SymbolInfo>();
 
@@ -31,6 +31,14 @@ symbolMap.set('SOL', {
   address: '4tmGLRCpJDQDtRVy4RTvnoVJmPPEWKCaJ3auCQrXu3K9',
   oneTick: 100,
   oneTickBonus: 1,
+});
+
+symbolMap.set('EOS', {
+  fee: 0,
+  address: 'eosupbitsusr',
+  memo: 'd027e05d-b73c-49e7-98c7-25079c5b0fa3',
+  oneTick: 1,
+  oneTickBonus: 100,
 });
 
 export { symbolType, symbolMap };

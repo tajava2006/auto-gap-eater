@@ -58,6 +58,7 @@ export class SelectPriceAmountService {
       return;
     }
     let buyPrice = 0;
+    let buyStartPrice = 0;
     let totalQuantity = 0;
     let targetAmount = Math.min(
       this.configService.get('KRW_AMOUNT_PER_ONE_CYCLE'),
@@ -66,6 +67,9 @@ export class SelectPriceAmountService {
     console.log('전략함수 targetAmount : ', targetAmount);
     for (const item of bithumbOrderbook.data.asks) {
       const price = Number(item.price);
+      if (buyStartPrice === 0) {
+        buyStartPrice = Number(item.price);
+      }
       const quantity = Number(item.quantity);
       // 현재 아이템의 가격과 수량을 사용할 수 있는 금액과 비교
       if (price * quantity <= targetAmount) {
@@ -74,40 +78,71 @@ export class SelectPriceAmountService {
         targetAmount -= price * quantity;
         // 가장 비싼 가격을 갱신합니다.
         buyPrice = price;
+        console.log(
+          '다 사고 다음 껄로 targetAmount, quantity, price, totalquantity : ',
+          targetAmount,
+          quantity,
+          price,
+          totalQuantity,
+        );
       } else {
         // 현재 아이템을 다 살 수 없는 경우 일부만 산 후 종료합니다.
         const partialQuantity = Math.floor(targetAmount / price);
         totalQuantity += partialQuantity;
         targetAmount -= price * partialQuantity;
         buyPrice = price;
+        console.log(
+          '여기에서 매수 해결 가능할 때 targetAmount, quantity, price, totalquantity :',
+          targetAmount,
+          quantity,
+          price,
+          totalQuantity,
+        );
         break;
       }
     }
-    const consumedKrw = Math.min(
-      this.configService.get('KRW_AMOUNT_PER_ONE_CYCLE'),
-      Number(availableKrw.availableBalance),
-    );
+    if (symbolMap.get(symbol).fee !== 0) {
+      // 너무 최적가격으로 주문을 내면 다 안 사질 염려가 있으므로 1틱 비싸게 주문함. 그에 따라 수량은 적당히 적게 조절함
+      totalQuantity = totalQuantity - symbolMap.get(symbol).oneTickBonus;
+      buyPrice = buyPrice + symbolMap.get(symbol).oneTick;
+    } else {
+      // 출금수수료가 0인 코인은 다른 전략으로 간다. 소액이라도 출금 수수료 패널티가 없으므로 목표치 만큼 다 안 사져도 ok
+      // 오히려 적게 사도 되니까 메이커 리워드를 먹는 것을 목표로 한다. 매수 가격을 최초 가격으로 설정
+      // 이후 스케쥴러에서 미체결 주문이 있으면 바로바로 취소
+      buyPrice = buyStartPrice;
+    }
     let rewardkRW = 0;
     let amountShouldbeSold = totalQuantity;
     for (const order of upbitOrderbook[0].orderbook_units) {
       const price = order.bid_price;
       const size = order.bid_size;
       // 현재 가격과 수량을 사용할 수 있는 금액과 비교합니다.
-      if (size <= amountShouldbeSold / price) {
+      if (size <= amountShouldbeSold) {
         // 전체 금액에 현재 가격 * 수량을 더합니다.
         rewardkRW += size * price;
         // 사용한 금액은 뺍니다.
         amountShouldbeSold -= size;
+        console.log(
+          '다 팔고 다음 껄로 rewardKrw, size, price, amoutntShouldBeSold:',
+          rewardkRW,
+          size,
+          price,
+          amountShouldbeSold,
+        );
       } else {
         // 현재 가격의 수량을 모두 팔아야 하는 경우
         rewardkRW += amountShouldbeSold * price;
+        console.log(
+          '여기에서 매도 해결 가능할 때 rewardKrw, size, price, amoutntShouldBeSold:',
+          rewardkRW,
+          size,
+          price,
+          amountShouldbeSold,
+        );
         break;
       }
     }
-    // 너무 최적가격으로 주문을 내면 다 안 사질 염려가 있으므로 1틱 비싸게 주문함. 그에 따라 수량은 적당히 적게 조절함
-    // todo 심볼별로 몇 원 비싸게 살 것인지 수량을 얼마나 줄여야 할 것인지 다르게 해줘야 할 수 있음
-    totalQuantity = totalQuantity - symbolMap.get(symbol).oneTickBonus;
-    buyPrice = buyPrice + symbolMap.get(symbol).oneTick;
+    const consumedKrw = totalQuantity * buyPrice;
     console.log('지정가격: ', buyPrice);
     console.log('구매수량: ', totalQuantity);
     console.log('최종소비원화: ', consumedKrw);
