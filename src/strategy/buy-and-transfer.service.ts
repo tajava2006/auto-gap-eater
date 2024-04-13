@@ -30,7 +30,7 @@ export class BuyAndTransferService {
       this.running = true;
       const buyReceipt = await this.bithumb.buy(
         symbol,
-        String(strategy.totalQuantity),
+        String(Math.floor(strategy.totalQuantity)),
         String(strategy.buyPrice),
       );
       console.log('빗썸 매수 요청 영수증 : ', buyReceipt);
