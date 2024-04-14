@@ -79,11 +79,9 @@ export class SelectPriceAmountService {
         // 가장 비싼 가격을 갱신합니다.
         buyPrice = price;
         console.log(
-          '다 사고 다음 껄로 targetAmount, quantity, price, totalquantity : ',
-          targetAmount,
-          quantity,
+          '다 사고 다음 껄로 price, size 1111111111111111111: ',
           price,
-          totalQuantity,
+          quantity,
         );
       } else {
         // 현재 아이템을 다 살 수 없는 경우 일부만 산 후 종료합니다.
@@ -92,11 +90,9 @@ export class SelectPriceAmountService {
         targetAmount -= price * partialQuantity;
         buyPrice = price;
         console.log(
-          '여기에서 매수 해결 가능할 때 targetAmount, quantity, price, totalquantity :',
-          targetAmount,
-          quantity,
+          '여기에서 매수 해결 가능할 때 price, size 111111111:',
           price,
-          totalQuantity,
+          quantity,
         );
         break;
       }
@@ -123,21 +119,17 @@ export class SelectPriceAmountService {
         // 사용한 금액은 뺍니다.
         amountShouldbeSold -= size;
         console.log(
-          '다 팔고 다음 껄로 rewardKrw, size, price, amoutntShouldBeSold:',
-          rewardkRW,
-          size,
+          '다 팔고 다음 껄로 price,  size 1111111111111111111:',
           price,
-          amountShouldbeSold,
+          size,
         );
       } else {
         // 현재 가격의 수량을 모두 팔아야 하는 경우
         rewardkRW += amountShouldbeSold * price;
         console.log(
-          '여기에서 매도 해결 가능할 때 rewardKrw, size, price, amoutntShouldBeSold:',
-          rewardkRW,
-          size,
+          '여기에서 매도 해결 가능할 때 price, size, 11111111:',
           price,
-          amountShouldbeSold,
+          size,
         );
         break;
       }
