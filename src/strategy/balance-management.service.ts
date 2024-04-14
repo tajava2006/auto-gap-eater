@@ -52,17 +52,20 @@ export class BalanceManagementService implements OnModuleInit {
 
   @Cron('* * * * *')
   async onBalanceChange() {
+    const symbol: symbolType = this.configService.get('SYMBOL_TO_RUN');
     const dbBalancePromise = this.userBalanceRepository.findOne({
       where: {
         id: 1,
       },
     });
-    const symbol: symbolType = this.configService.get('SYMBOL_TO_RUN');
     const myOrderPromise = this.bithumb.getMySuccessOrder(symbol);
-    const [dbBalance, myOrder] = await Promise.all([
+    const depositsPromise = this.krwDepositRepository.find();
+    const [dbBalance, myOrder, deposits] = await Promise.all([
       dbBalancePromise,
       myOrderPromise,
+      depositsPromise,
     ]);
+
     try {
       for (let i = myOrder.data.length - 1; i >= 0; i--) {
         const order = myOrder.data[i];
@@ -142,27 +145,8 @@ export class BalanceManagementService implements OnModuleInit {
     } catch (err) {
       console.log('밸런스 함수 에러');
     }
-  }
 
-  async saveNewDeposit(price: string, date: string) {
-    const newDeposit = new KrwDeposit();
-    newDeposit.amount = price;
-    newDeposit.createdAt = date;
-    await this.krwDepositRepository.insert(newDeposit);
-  }
-
-  @Cron('* * * * *')
-  async rebalanceKrw() {
-    const dbBalancePromise = this.userBalanceRepository.findOne({
-      where: {
-        id: 1,
-      },
-    });
-    const depositsPromise = this.krwDepositRepository.find();
-    const [dbBalance, deposits] = await Promise.all([
-      dbBalancePromise,
-      depositsPromise,
-    ]);
+    // 이전 입금 리밸런스하기
     let count = 0;
     if (deposits.length === 0) return;
     for (const row of deposits) {
@@ -199,5 +183,12 @@ export class BalanceManagementService implements OnModuleInit {
     if (count === deposits.length) {
       await this.upsertUserBalance();
     }
+  }
+
+  async saveNewDeposit(price: string, date: string) {
+    const newDeposit = new KrwDeposit();
+    newDeposit.amount = price;
+    newDeposit.createdAt = date;
+    await this.krwDepositRepository.insert(newDeposit);
   }
 }
