@@ -37,7 +37,7 @@ export class BuyAndTransferService {
     } catch (err) {
       console.log('buy 함수 에러');
     } finally {
-      await wait(1000 * 60 * 5);
+      await wait(1000 * 60 * 2);
       this.running = false;
     }
   }
